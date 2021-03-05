@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+      span {
+        margin: 0 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <table border="1">
+        <thead>
+          <tr>
+            <th>label</th>
+            <th v-for="(col, index) in colArr" :key="index">{{ col }}</th>
+            <th>合计</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(lv1, i) in list" :key="lv1.id">
+            <td>{{ lv1.label }}</td>
+            <td v-for="(col, j) in colArr" :key="j"><input type="text" v-model="valueList[i][j].value" onkeyup="value=value.replace(/[^0-9-]+/,'')" @change="changeInput"></td>
+            <td>{{ rowManger[i] }}</td>
+          </tr>
+          <tr>
+            <td>合计行</td>
+            <td v-for="(colNum, index) in colManger" :key="index">{{colNum}}</td>
+            <td>0</td>
+          </tr>
+        </tbody>
+      </table>
+      <button @click="addCol">添加列</button>
+      <button @click="showNumber = !showNumber; showNumber ? showItem = '关闭数字' : showItem = '显示数字'">{{ showItem }}</button>
+      <div v-show="showNumber">
+        <div v-for="(item, index) in valueList" :key="index">
+          <span v-for="(num, i) in item" :key="i">{{ num.value }}</span>
+          <span>{{ rowManger[index] }}</span>
+        </div>
+        <div>
+          <span v-for="num,i in colManger" :key="i">{{ num }}</span>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script>
+      var app = new Vue({
+        el: '#app',
+        data: {
+          list: [],
+          colManger: [],  //列合并数据数组
+          rowManger: [],  //行合并数据数组
+          colArr: ['第一列', '第二列'],  //列表头数组
+          colList: [
+              {
+                id: 1,
+                label: '1',
+                children: [
+                    {
+                        id: 11,
+                        label: '1-1'
+                    },
+                    {
+                        id: 12,
+                        label: '1-2'
+                    },
+                    {
+                        id: 13,
+                        label: '1-3'
+                    }
+                ]
+            },
+            {
+                id: 2,
+                label: '2'
+            },
+            {
+                id: 3,
+                label: '3',
+                children: [
+                    {
+                        id: 31,
+                        label: '3-1'
+                    },
+                    {
+                        id: 32,
+                        label: '3-2'
+                    },
+                    {
+                        id: 33,
+                        label: '3-3'
+                    }
+                ]
+            }
+          ],
+          valueList: [],  //可输入内容区数据数组
+          showNumber: false,
+          showItem: '显示数字'
+        },
+        created() {
+          this.init()
+          
+        },
+        methods: {
+          // 初始化
+          init() {
+            this.computedChildren()
+            for(let i in this.colArr) {
+              this.colManger.push(0)
+            }
+            for(let i in this.list) {
+              this.rowManger.push(0)
+              this.valueList.push([])
+              for(let j in this.colArr) {
+                this.valueList[i].push({value: ''})
+              }
+            }
+          },
+          // 将带有children属性的数据处理为一维数组
+          computedChildren() {
+            this.list = this.colList.reduce((acc, cur)=> {
+              if(cur.children) {
+                return acc.concat([cur], cur.children)
+              }
+              return acc.concat(cur)
+            }, [])
+          },
+          // 添加列
+          addCol() {
+            this.colArr.push(`第${this.colArr.length + 1}列`,)
+            this.colManger.push(0)
+            for(let i in this.list) {
+              this.valueList[i].push({value: ''})
+            }
+          },
+          // 输入数字计算合并值 
+          changeInput() {
+            for(let i in this.valueList) {
+              let row = 0
+              for(let j in this.valueList[i]) {
+                row += Number(this.valueList[i][j].value)
+              }
+              if(row != 0 && !row) {
+                return
+              }
+              this.rowManger.splice(i, 1, row)
+            }
+            for(let i in this.colArr) {
+              let col = 0
+              for(let j in this.valueList) {
+                col += Number(this.valueList[j][i].value)
+              }
+              if(col != 0 && !col) {
+                return
+              }
+              this.colManger.splice(i, 1, col)
+            }
+          }
+        }
+      })
+    </script>
+  </body>
+</html>
