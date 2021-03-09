@@ -20,19 +20,21 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(lv1, i) in list" :key="lv1.id">
-            <td>{{ lv1.label }}</td>
+          <tr v-for="(lv, i) in list" :key="lv.id">
+            <td class="label">{{ lv.label }}</td>
             <td v-for="(col, j) in colArr" :key="j"><input type="text" v-model="valueList[i][j].value" onkeyup="value=value.replace(/[^0-9-]+/,'')" @change="changeInput"></td>
             <td>{{ rowManger[i] }}</td>
           </tr>
+          
           <tr>
             <td>合计行</td>
             <td v-for="(colNum, index) in colManger" :key="index">{{colNum}}</td>
-            <td>0</td>
+            <td>{{ manger }}</td>
           </tr>
         </tbody>
       </table>
       <button @click="addCol">添加列</button>
+      <button @click="addRow(selectDom)">添加行</button>
       <button @click="showNumber = !showNumber; showNumber ? showItem = '关闭数字' : showItem = '显示数字'">{{ showItem }}</button>
       <div v-show="showNumber">
         <div v-for="(item, index) in valueList" :key="index">
@@ -48,60 +50,70 @@
     <script>
       var app = new Vue({
         el: '#app',
+        computed: {
+          manger() {
+            if(!this.colManger.length) {
+              return 0
+            }
+            return this.colManger.reduce((acc, cur)=> {
+              return Number(acc) + Number(cur)
+            }, [])
+          }
+        },
         data: {
           list: [],
           colManger: [],  //列合并数据数组
           rowManger: [],  //行合并数据数组
-          colArr: ['第一列', '第二列'],  //列表头数组
+          colArr: [],  //列表头数组
           colList: [
-              {
-                id: 1,
-                label: '1',
-                children: [
-                    {
-                        id: 11,
-                        label: '1-1'
-                    },
-                    {
-                        id: 12,
-                        label: '1-2'
-                    },
-                    {
-                        id: 13,
-                        label: '1-3'
-                    }
-                ]
-            },
-            {
-                id: 2,
-                label: '2'
-            },
-            {
-                id: 3,
-                label: '3',
-                children: [
-                    {
-                        id: 31,
-                        label: '3-1'
-                    },
-                    {
-                        id: 32,
-                        label: '3-2'
-                    },
-                    {
-                        id: 33,
-                        label: '3-3'
-                    }
-                ]
-            }
+            //   {
+            //     id: 1,
+            //     label: '1',
+            //     children: [
+            //         {
+            //             id: 11,
+            //             label: '1-1'
+            //         },
+            //         {
+            //             id: 12,
+            //             label: '1-2'
+            //         },
+            //         {
+            //             id: 13,
+            //             label: '1-3'
+            //         }
+            //     ]
+            // },
+            // {
+            //     id: 2,
+            //     label: '2'
+            // },
+            // {
+            //     id: 3,
+            //     label: '3',
+            //     children: [
+            //         {
+            //             id: 31,
+            //             label: '3-1'
+            //         },
+            //         {
+            //             id: 32,
+            //             label: '3-2'
+            //         },
+            //         {
+            //             id: 33,
+            //             label: '3-3'
+            //         }
+            //     ]
+            // }
           ],
           valueList: [],  //可输入内容区数据数组
           showNumber: false,
-          showItem: '显示数字'
+          showItem: '显示数字',
+          selectDom: null
         },
         created() {
           this.init()
-          
         },
         methods: {
           // 初始化
@@ -130,10 +142,32 @@
           // 添加列
           addCol() {
             this.colArr.push(`第${this.colArr.length + 1}列`,)
+            // 合并
             this.colManger.push(0)
-            for(let i in this.list) {
+            for(let i in this.list) { 
               this.valueList[i].push({value: ''})
             }
+          },
+          // 添加行
+          addRow(dom) {
+            const obj = {}
+            const id = this.colList.length ? this.colList[this.colList.length - 1].id + 1 : 1;
+            obj.id = id
+            obj.label = String(id)
+            // 数据模型
+            this.colList.push(obj)
+            // 为格式化后的数据添加新数据
+            this.list.push(obj)
+
+            // 为新增加的行绑定数据
+            this.valueList.push([])
+            for(let i in this.colArr) {
+              this.valueList[this.valueList.length - 1].push({
+                value: ''
+              })
+            }
+            // 为行合计添加0
+            this.rowManger.push(0)
           },
           // 输入数字计算合并值 
           changeInput() {
