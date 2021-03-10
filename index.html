@@ -22,7 +22,7 @@
         <tbody>
           <tr v-for="(lv, i) in list" :key="lv.id">
             <td class="label">{{ lv.label }}</td>
-            <td v-for="(col, j) in colArr" :key="j"><input type="text" v-model="valueList[i][j].value" onkeyup="value=value.replace(/[^0-9-]+/,'')" @change="changeInput"></td>
+            <td v-for="(col, j) in colArr" :key="j"><input type="text" v-model="valueList[i][j].value" oninput="value=value.replace(/[^0-9-]+/,'')" @input="changeInput"></td>
             <td>{{ rowManger[i] }}</td>
           </tr>
           
@@ -170,7 +170,8 @@
             this.rowManger.push(0)
           },
           // 输入数字计算合并值 
-          changeInput() {
+          changeInput(value) {
+            console.log(value)
             for(let i in this.valueList) {
               let row = 0
               for(let j in this.valueList[i]) {
